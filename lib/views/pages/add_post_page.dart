@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:instagram_clone/models/user_model.dart';
 import 'package:instagram_clone/providers/provider.dart';
+import 'package:instagram_clone/services/firestore/firestore_methods.dart';
 import 'package:instagram_clone/utils/constants/colors.dart';
 import 'package:instagram_clone/utils/helpers/pick_image.dart';
+import 'package:instagram_clone/utils/helpers/snackbar.dart';
 import 'package:provider/provider.dart';
 
 class AddPostView extends StatefulWidget {
@@ -18,7 +20,28 @@ class _AddPostViewState extends State<AddPostView> {
 
   Uint8List? _file;
   final TextEditingController _descriptionController = TextEditingController();
+  bool _isLoading = false;
 
+  void postImage(String uid,String userName,String profImage) async{
+    setState(() {
+      _isLoading = true;
+    });
+    try{
+      String res = await FireStoreMethods().uploadPost(_descriptionController.text, _file!, uid, userName, profImage);
+      setState(() {
+        _isLoading = false;
+      });
+      if(res=='success'){
+        showSnackbar(context, 'Image Posted');
+        clearImage();
+      }else{
+        showSnackbar(context, 'Error Occured');
+      }
+    }catch(e){
+      showSnackbar(context, e.toString());
+    }
+  }
+  
   _selectImage(BuildContext context) async{
     return showDialog(context: context, builder:(context) {
       return SimpleDialog(
@@ -58,6 +81,17 @@ class _AddPostViewState extends State<AddPostView> {
     },);
   }
 
+  void clearImage(){
+    setState(() {
+      _file = null;
+    });
+  }
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
 
@@ -74,19 +108,21 @@ class _AddPostViewState extends State<AddPostView> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            
+            clearImage();
           },
         ),
         title: const Text("Post to"),
         centerTitle: false,
         actions: [
           TextButton(onPressed:() {
-            
+            postImage(user.uid, user.userName, user.photoUrl);
           }, child: const Text('Post',style: TextStyle(color: Colors.blueAccent,fontSize: 16,fontWeight: FontWeight.bold),))
         ],
       ),
       body: Column(
         children: [
+          _isLoading ? const LinearProgressIndicator(): const Padding(padding: EdgeInsets.only(top: 0)),
+          const Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,7 +138,7 @@ class _AddPostViewState extends State<AddPostView> {
                     hintText: 'Description',
                     border: InputBorder.none,
                   ),
-                  maxLines: 0,
+                  maxLines: null,
                 ),
               ),
               SizedBox(

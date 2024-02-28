@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram_clone/utils/constants/colors.dart';
+import 'package:instagram_clone/utils/constants/global_variables.dart';
 
 
 class MobileScreenLayout extends StatefulWidget {
@@ -38,9 +39,7 @@ class _MobileScreenLayoutState extends State<MobileScreenLayout> {
       body: PageView(
         controller: pageController,
         physics: const NeverScrollableScrollPhysics(),
-        children: [
-          
-        ],
+        children: pages,
         onPageChanged:(value) {
           setState(() {
             _page = value;
