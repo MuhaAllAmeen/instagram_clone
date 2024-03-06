@@ -17,71 +17,74 @@ class AddPostView extends StatefulWidget {
 }
 
 class _AddPostViewState extends State<AddPostView> {
-
   Uint8List? _file;
   final TextEditingController _descriptionController = TextEditingController();
   bool _isLoading = false;
 
-  void postImage(String uid,String userName,String profImage) async{
+  void postImage(String uid, String userName, String profImage) async {
     setState(() {
       _isLoading = true;
     });
-    try{
-      String res = await FireStoreMethods().uploadPost(_descriptionController.text, _file!, uid, userName, profImage);
+    try {
+      String res = await FireStoreMethods().uploadPost(
+          _descriptionController.text, _file!, uid, userName, profImage);
       setState(() {
         _isLoading = false;
       });
-      if(res=='success'){
+      if (res == 'success') {
         showSnackbar(context, 'Image Posted');
         clearImage();
-      }else{
+      } else {
         showSnackbar(context, 'Error Occured');
       }
-    }catch(e){
+    } catch (e) {
       showSnackbar(context, e.toString());
     }
   }
-  
-  _selectImage(BuildContext context) async{
-    return showDialog(context: context, builder:(context) {
-      return SimpleDialog(
-        title: const Text('Create a Post'),
-        children: [
-          SimpleDialogOption(
-            padding: const EdgeInsets.all(20),
-            child: const Text('Take a Photo'),
-            onPressed: () async{
-              Navigator.of(context).pop();
-              Uint8List file = await pickImage(ImageSource.camera);
-              setState(() {
-                _file = file;
-              });
-            },
-          ),
-          SimpleDialogOption(
-            padding: const EdgeInsets.all(20),
-            child: const Text('Choose From Gallery'),
-            onPressed: () async{
-              Navigator.of(context).pop();
-              Uint8List file = await pickImage(ImageSource.gallery);
-              setState(() {
-                _file = file;
-              });
-            },
-          ),
-          SimpleDialogOption(
-            padding: const EdgeInsets.all(20),
-            child: const Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },);
+
+  _selectImage(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return SimpleDialog(
+          title: const Text('Create a Post'),
+          children: [
+            SimpleDialogOption(
+              padding: const EdgeInsets.all(20),
+              child: const Text('Take a Photo'),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                Uint8List file = await pickImage(ImageSource.camera);
+                setState(() {
+                  _file = file;
+                });
+              },
+            ),
+            SimpleDialogOption(
+              padding: const EdgeInsets.all(20),
+              child: const Text('Choose From Gallery'),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                Uint8List file = await pickImage(ImageSource.gallery);
+                setState(() {
+                  _file = file;
+                });
+              },
+            ),
+            SimpleDialogOption(
+              padding: const EdgeInsets.all(20),
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
-  void clearImage(){
+  void clearImage() {
     setState(() {
       _file = null;
     });
@@ -92,72 +95,84 @@ class _AddPostViewState extends State<AddPostView> {
     _descriptionController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
-
-    final User user = Provider.of<UserProvider>(context).getUser;
-
-    return _file==null? Center(
-      child: IconButton(onPressed:() {
-        _selectImage(context);
-      }, icon: const Icon(Icons.upload)),
-    ):
-    Scaffold(
-      appBar: AppBar(
-        backgroundColor: mobileBackgroundColor,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            clearImage();
-          },
-        ),
-        title: const Text("Post to"),
-        centerTitle: false,
-        actions: [
-          TextButton(onPressed:() {
-            postImage(user.uid, user.userName, user.photoUrl);
-          }, child: const Text('Post',style: TextStyle(color: Colors.blueAccent,fontSize: 16,fontWeight: FontWeight.bold),))
-        ],
-      ),
-      body: Column(
-        children: [
-          _isLoading ? const LinearProgressIndicator(): const Padding(padding: EdgeInsets.only(top: 0)),
-          const Divider(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                backgroundImage: NetworkImage(user.photoUrl)
-                ),
-              SizedBox(
-                width: MediaQuery.of(context).size.width*0.45,
-                child: TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    hintText: 'Description',
-                    border: InputBorder.none,
-                  ),
-                  maxLines: null,
-                ),
-              ),
-              SizedBox(
-                height: 45,
-                width: 45,
-                child: AspectRatio(aspectRatio: 487/451,
-                child: Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(image: MemoryImage(_file!),
-                    fit: BoxFit.fill,
-                    alignment: FractionalOffset.topCenter)
-                  ),
-                ),),
-              ),
-              const Divider(),
-            ],
+    final User user = Provider.of<UserProvider>(context).getUser!;
+    return _file == null
+        ? Center(
+            child: IconButton(
+                onPressed: () {
+                  _selectImage(context);
+                },
+                icon: const Icon(Icons.upload)),
           )
-        ],
-      ),
-    );
+        : Scaffold(
+            appBar: AppBar(
+              backgroundColor: mobileBackgroundColor,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  clearImage();
+                },
+              ),
+              title: const Text("Post to"),
+              centerTitle: false,
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      postImage(user.uid, user.userName, user.photoUrl);
+                    },
+                    child: const Text(
+                      'Post',
+                      style: TextStyle(
+                          color: Colors.blueAccent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    ))
+              ],
+            ),
+            body: Column(
+              children: [
+                _isLoading
+                    ? const LinearProgressIndicator()
+                    : const Padding(padding: EdgeInsets.only(top: 0)),
+                const Divider(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(backgroundImage: NetworkImage(user.photoUrl)),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.45,
+                      child: TextField(
+                        controller: _descriptionController,
+                        decoration: const InputDecoration(
+                          hintText: 'Description',
+                          border: InputBorder.none,
+                        ),
+                        maxLines: null,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 45,
+                      width: 45,
+                      child: AspectRatio(
+                        aspectRatio: 487 / 451,
+                        child: Container(
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: MemoryImage(_file!),
+                                  fit: BoxFit.fill,
+                                  alignment: FractionalOffset.topCenter)),
+                        ),
+                      ),
+                    ),
+                    const Divider(),
+                  ],
+                )
+              ],
+            ),
+          );
   }
 }
