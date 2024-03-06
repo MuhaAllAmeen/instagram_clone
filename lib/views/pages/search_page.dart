@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:instagram_clone/utils/constants/colors.dart';
 import 'package:instagram_clone/views/pages/profile_page.dart';
+import 'package:collection/collection.dart';
 
 class SearchView extends StatefulWidget {
   const SearchView({super.key});
@@ -44,26 +45,26 @@ class _SearchViewState extends State<SearchView> {
                   .get(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  print(snapshot.data.toString());
                   return ListView.builder(
                     itemCount: (snapshot.data! as dynamic).docs.length,
                     itemBuilder: (context, index) {
+                      final snapData = (snapshot.data! as dynamic).docs[index];
                       return InkWell(
                         onTap: () =>
                             Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => ProfileView(
-                              uid: (snapshot.data! as dynamic).docs[index]
-                                  ['uid']),
+                          builder: (context) =>
+                              ProfileView(uid: snapData['uid']),
                         )),
                         child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage((snapshot.data!
-                                    as QuerySnapshot<Map<String, dynamic>>)
-                                .docs[index]['photoUrl']),
-                            radius: 16,
-                          ),
-                          title: Text((snapshot.data! as dynamic).docs[index]
-                              ['username']),
+                          leading:
+                              snapData.data().toString().contains('photoUrl')
+                                  ? CircleAvatar(
+                                      backgroundImage:
+                                          NetworkImage(snapData['photoUrl']),
+                                      radius: 16,
+                                    )
+                                  : null,
+                          title: Text(snapData['username']),
                         ),
                       );
                     },
@@ -80,14 +81,20 @@ class _SearchViewState extends State<SearchView> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return StaggeredGrid.count(
-                      crossAxisCount: 3,
+                      crossAxisCount: 4,
+                      mainAxisSpacing: 5,
+                      crossAxisSpacing: 5,
+                      axisDirection: AxisDirection.right,
                       children: (snapshot.data!
                               as QuerySnapshot<Map<String, dynamic>>)
                           .docs
-                          .map((e) => StaggeredGridTile.count(
-                                mainAxisCellCount: 1,
-                                crossAxisCellCount: 1,
-                                child: Image.network(e['postUrl']),
+                          .mapIndexed((i, e) => StaggeredGridTile.count(
+                                mainAxisCellCount: i % 2 == 0 ? 3 : 1,
+                                crossAxisCellCount: i % 2 == 0 ? 1 : 3,
+                                child: Image.network(
+                                  e['postUrl'],
+                                  fit: BoxFit.cover,
+                                ),
                               ))
                           .toList());
                 } else {
