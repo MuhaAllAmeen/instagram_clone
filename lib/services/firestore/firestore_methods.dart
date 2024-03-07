@@ -1,5 +1,7 @@
+import 'dart:core';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:instagram_clone/models/message_model.dart';
 import 'package:instagram_clone/models/post_model.dart';
 import 'package:instagram_clone/services/storage/storage_method.dart';
 import 'package:uuid/uuid.dart';
@@ -86,23 +88,64 @@ class FireStoreMethods {
       DocumentSnapshot snap =
           await _firestore.collection('users').doc(uid).get();
       List following = (snap.data()! as dynamic)['following'];
+      print(following);
       if (following.contains(followId)) {
         await _firestore.collection('users').doc(followId).update({
           'followers': FieldValue.arrayRemove([uid])
         });
         await _firestore.collection('users').doc(uid).update({
-          'followers': FieldValue.arrayRemove([followId])
+          'following': FieldValue.arrayRemove([followId])
         });
       } else {
         await _firestore.collection('users').doc(followId).update({
           'followers': FieldValue.arrayUnion([uid])
         });
         await _firestore.collection('users').doc(uid).update({
-          'followers': FieldValue.arrayUnion([followId])
+          'following': FieldValue.arrayUnion([followId])
         });
       }
     } catch (e) {
       print(e.toString());
     }
+  }
+
+  Stream<List<Map<String, dynamic>>> getUserStream(String currentUser) {
+    return _firestore.collection('users').snapshots().map((snapshot) => snapshot
+        .docs
+        .where((element) => element.data()['uid'] != currentUser)
+        .map((e) => e.data())
+        .toList());
+  }
+
+  Future<void> sendMessage(Map<String, dynamic> currentUser,
+      Map<String, dynamic> reciever, String text) async {
+    final DateTime timeStamp = DateTime.timestamp();
+    Message newMessage = Message(
+        senderID: currentUser['uid'],
+        recieverID: reciever['uid'],
+        timeStamp: timeStamp,
+        message: text);
+    List<String> id = [currentUser['uid'], reciever['uid']];
+    id.sort();
+    String chatRoomID = id.join('_');
+    await _firestore
+        .collection('chats')
+        .doc(chatRoomID)
+        .collection('messages')
+        .add(newMessage.toMap());
+  }
+
+  Stream<QuerySnapshot> getMessages(
+      Map<String, dynamic> currentUser, Map<String, dynamic> reciever) {
+    List<String> id = [currentUser['uid'], reciever['uid']];
+    id.sort();
+    String chatRoomID = id.join('_');
+
+    return _firestore
+        .collection('chats')
+        .doc(chatRoomID)
+        .collection('messages')
+        .orderBy('timestamp', descending: false)
+        .snapshots();
   }
 }

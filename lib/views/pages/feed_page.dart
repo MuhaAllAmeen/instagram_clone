@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram_clone/utils/constants/colors.dart';
 import 'package:instagram_clone/utils/constants/global_variables.dart';
+import 'package:instagram_clone/views/pages/chat_listview_page.dart';
 import 'package:instagram_clone/widgets/post_card.dart';
 
 class FeedView extends StatelessWidget {
@@ -22,9 +23,12 @@ class FeedView extends StatelessWidget {
               title: SvgPicture.asset(
                 'assets/images/ic_instagram.svg',
                 height: 32,
+                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
               ),
               actions: [
-                IconButton(onPressed: () {}, icon: const Icon(Icons.messenger))
+                IconButton(onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(builder:(context) => ChatListView(),));
+                }, icon: const Icon(Icons.messenger))
               ],
             ),
       body: StreamBuilder(

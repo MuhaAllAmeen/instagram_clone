@@ -124,7 +124,7 @@ class _ProfileViewState extends State<ProfileView> {
                                                 text: 'Unfollow',
                                                 backgroundColor: Colors.white,
                                                 textColor: Colors.black,
-                                                borderColor: Colors.grey,
+                                                borderColor: const Color.fromARGB(255, 233, 221, 221),
                                                 function: () async {
                                                   await FireStoreMethods()
                                                       .followUser(

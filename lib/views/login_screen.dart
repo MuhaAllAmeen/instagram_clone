@@ -71,6 +71,7 @@ class _LoginViewState extends State<LoginView> {
               SvgPicture.asset(
                 'assets/images/ic_instagram.svg',
                 height: 64,
+                colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
               ),
               const SizedBox(
                 height: 64,

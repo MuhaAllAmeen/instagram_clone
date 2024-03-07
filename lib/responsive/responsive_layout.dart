@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram_clone/providers/provider.dart';
 import 'package:instagram_clone/utils/constants/global_variables.dart';
