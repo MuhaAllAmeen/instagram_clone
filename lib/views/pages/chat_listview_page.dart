@@ -32,9 +32,13 @@ class _ChatListViewState extends State<ChatListView> {
 
   Widget _buildUserListItem(
       User currentUser, Map<String, dynamic> userData, BuildContext context) {
+    List<String> id = [currentUser.uid, userData['uid']];
+    id.sort();
+    String chatRoomID = id.join('_');
     return UserTile(
       username: userData['username'],
       profilePic: userData['photoUrl'],
+      chatRoomID: chatRoomID,
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => ChatView(
@@ -64,6 +68,7 @@ class _ChatListViewState extends State<ChatListView> {
       body: StreamBuilder(
         stream: fireStoreMethods.getUserStream(user.uid),
         builder: (context, snapshot) {
+          // print(snapshot);
           if (snapshot.hasError) {
             return const Center(
               child: Text('Error'),
@@ -74,11 +79,14 @@ class _ChatListViewState extends State<ChatListView> {
               child: CircularProgressIndicator(),
             );
           } else {
-            return ListView(
-              children: snapshot.data!
-                  .map<Widget>(
-                      (userData) => _buildUserListItem(user, userData, context))
-                  .toList(),
+            return Container(
+              margin: const EdgeInsets.only(top: 10),
+              child: ListView(
+                children: snapshot.data!
+                    .map<Widget>(
+                        (userData) => _buildUserListItem(user, userData, context))
+                    .toList(),
+              ),
             );
           }
         },

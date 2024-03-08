@@ -30,7 +30,10 @@ class MyApp extends StatelessWidget {
           create: (context) {
             return UserProvider();
           },
-        )
+        ),
+        ChangeNotifierProvider(create:(context) {
+          return ChatProvider();
+        },)
       ],
       child: MaterialApp(
         title: 'Instagram Clone',

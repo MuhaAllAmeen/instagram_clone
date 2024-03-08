@@ -14,3 +14,20 @@ class UserProvider with ChangeNotifier {
     }
   }
 }
+
+class ChatProvider with ChangeNotifier{
+  String message = '';
+  String chatID = '';
+  Map<String,String> messageUid = {};
+  Map<String,String>? get getMessage => messageUid;
+  Future<void> saveLastMessage(String latestMessage,String chatID) async{
+    await Future.delayed(const Duration(milliseconds: 100));
+    print(latestMessage);
+    print(chatID);
+    message = latestMessage;
+    chatID = chatID;
+    messageUid.addEntries({chatID:message}.entries);
+    print(messageUid);
+    notifyListeners();
+  }
+}

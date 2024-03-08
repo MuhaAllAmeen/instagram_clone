@@ -88,7 +88,6 @@ class FireStoreMethods {
       DocumentSnapshot snap =
           await _firestore.collection('users').doc(uid).get();
       List following = (snap.data()! as dynamic)['following'];
-      print(following);
       if (following.contains(followId)) {
         await _firestore.collection('users').doc(followId).update({
           'followers': FieldValue.arrayRemove([uid])
@@ -110,24 +109,32 @@ class FireStoreMethods {
   }
 
   Stream<List<Map<String, dynamic>>> getUserStream(String currentUser) {
-    return _firestore.collection('users').snapshots().map((snapshot) => snapshot
-        .docs
-        .where((element) => element.data()['uid'] != currentUser)
-        .map((e) => e.data())
-        .toList());
+    return _firestore.collection('users').snapshots().map((snapshot) {
+    List<dynamic> followingList = snapshot.docs
+        .firstWhere((doc) => doc.id == currentUser)
+        .data()['following'];
+
+    return snapshot.docs
+        .where((doc) => followingList.contains(doc.id))
+        .map((doc) => doc.data())
+        .toList();
+  });
   }
 
   Future<void> sendMessage(Map<String, dynamic> currentUser,
       Map<String, dynamic> reciever, String text) async {
     final DateTime timeStamp = DateTime.timestamp();
+    List<String> id = [currentUser['uid'], reciever['uid']];
+    id.sort();
+    String chatRoomID = id.join('_');
     Message newMessage = Message(
         senderID: currentUser['uid'],
         recieverID: reciever['uid'],
         timeStamp: timeStamp,
-        message: text);
-    List<String> id = [currentUser['uid'], reciever['uid']];
-    id.sort();
-    String chatRoomID = id.join('_');
+        message: text,
+        chatID: chatRoomID
+        );
+    
     await _firestore
         .collection('chats')
         .doc(chatRoomID)

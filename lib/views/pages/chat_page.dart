@@ -1,13 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram_clone/providers/provider.dart';
 import 'package:instagram_clone/services/firestore/firestore_methods.dart';
 import 'package:instagram_clone/utils/constants/colors.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class ChatView extends StatefulWidget {
   final Map<String, dynamic> currentUser;
   final Map<String, dynamic> reciever;
   const ChatView(
-      {super.key, required this.reciever, required this.currentUser});
+      {super.key,
+      required this.reciever,
+      required this.currentUser,
+      });
 
   @override
   State<ChatView> createState() => _ChatViewState();
@@ -16,6 +22,12 @@ class ChatView extends StatefulWidget {
 class _ChatViewState extends State<ChatView> {
   final TextEditingController messageController = TextEditingController();
   final FireStoreMethods fireStoreMethods = FireStoreMethods();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   void dispose() {
     messageController.dispose();
@@ -33,6 +45,9 @@ class _ChatViewState extends State<ChatView> {
   Widget buildMessageItem(QueryDocumentSnapshot snapshot) {
     Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
     bool isCurrentUser = data['senderID'] == widget.currentUser['uid'];
+    context
+        .read<ChatProvider>()
+        .saveLastMessage(data['message'], data['chatID']);
 
     return Column(
       crossAxisAlignment:
@@ -40,24 +55,38 @@ class _ChatViewState extends State<ChatView> {
       mainAxisSize: MainAxisSize.min,
       children: [
         isCurrentUser
-            ? Container(
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.circular(10)),
-                child: Text(
-                  data['message'],
-                  style: const TextStyle(color: Colors.black, fontSize: 18),
-                ))
-            : Container(
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                decoration: BoxDecoration(
-                    color: secondaryColor,
-                    borderRadius: BorderRadius.circular(10)),
-                child: Text(data['message'],
-                    style: const TextStyle(color: Colors.black, fontSize: 18)))
+            ? Column(
+                children: [
+                  Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 10),
+                      decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Text(
+                        data['message'],
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 18),
+                      )),
+                  Text(DateFormat.jm().format(data['timestamp'].toDate()))
+                ],
+              )
+            : Column(
+                children: [
+                  Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 10),
+                      decoration: BoxDecoration(
+                          color: secondaryColor,
+                          borderRadius: BorderRadius.circular(10)),
+                      child: Text(data['message'],
+                          style: const TextStyle(
+                              color: Colors.black, fontSize: 18))),
+                  Text(DateFormat.jm().format(data['timestamp'].toDate()))
+                ],
+              )
       ],
     );
   }
